@@ -28,33 +28,45 @@ export class FootballService {
   }
 
   async getMatchdayResults(matchday: number): Promise<string> {
-    const cacheKey = `resultados-${matchday}`;
-    const ttl = commandTtls['futebolbr']?.cacheTtl ?? 60_000;
-    const cached = commandCache.get(cacheKey);
-    if (cached) return cached as string;
-
     const token = this.config.get<string>('FOOTBALL_API_TOKEN');
-    const res = await firstValueFrom(
-      this.http.get(`${this.baseUrl}/competitions/BSA/matches`, {
-        headers: { 'X-Auth-Token': token },
-        params: { matchday, status: 'FINISHED' },
-      }),
-    );
+    const ttl = commandTtls['futebolbr']?.cacheTtl ?? 60_000;
 
-    const jogos = res.data.matches;
-    if (!jogos.length)
-      return `Nenhum jogo encontrado para a rodada ${matchday}.`;
+    // Função interna para buscar os jogos
+    const fetchResults = async (rodada: number) => {
+      const cacheKey = `resultados-${rodada}`;
+      const cached = commandCache.get(cacheKey);
+      if (cached) return cached as string;
 
-    const texto = jogos
-      .map(
-        (m: any) =>
-          `• ${m.homeTeam.name} ${m.score.fullTime.home} x ${m.score.fullTime.away} ${m.awayTeam.name}`,
-      )
-      .join('\n');
+      const res = await firstValueFrom(
+        this.http.get(`${this.baseUrl}/competitions/BSA/matches`, {
+          headers: { 'X-Auth-Token': token },
+          params: { matchday: rodada, status: 'FINISHED' },
+        }),
+      );
 
-    const resposta = `📣 Resultados da Rodada ${matchday}:\n\n${texto}`;
-    commandCache.set(cacheKey, resposta, { ttl });
-    return resposta;
+      const jogos = res.data.matches;
+      if (!jogos.length) return null;
+
+      const texto = jogos
+        .map(
+          (m: any) =>
+            `• ${m.homeTeam.name} ${m.score.fullTime.home} x ${m.score.fullTime.away} ${m.awayTeam.name}`,
+        )
+        .join('\n');
+
+      const resposta = `📣 Resultados da Rodada ${rodada}:\n\n${texto}`;
+      commandCache.set(cacheKey, resposta, { ttl });
+      return resposta;
+    };
+
+    const atual = await fetchResults(matchday);
+    if (atual) return atual;
+
+    const anterior = await fetchResults(matchday - 1);
+    if (anterior)
+      return `⚠️ Rodada ${matchday} não teve jogos finalizados.\n\n${anterior}`;
+
+    return `⚠️ Nenhum jogo encontrado nas rodadas ${matchday} ou ${matchday - 1}.`;
   }
 
   async getStandings(): Promise<string> {
