@@ -1,98 +1,115 @@
+# 🤖 WhatsApp Bot – Automação com NestJS & Evolution API
+
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <img src="https://img.shields.io/badge/NestJS-Backend-red?style=for-the-badge&logo=nestjs" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Database-336791?style=for-the-badge&logo=postgresql" />
+  <img src="https://img.shields.io/badge/Docker-Container-2496ED?style=for-the-badge&logo=docker" />
+  <img src="https://img.shields.io/badge/Redis-Cache-DC382D?style=for-the-badge&logo=redis" />
+  <img src="https://img.shields.io/badge/Gemini%20API-IA-blueviolet?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Football%20Data-Dados%20Futebol-green?style=for-the-badge" />
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 📌 Visão Geral
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Este projeto é um bot de WhatsApp inteligente criado com **NestJS**, que utiliza a **Evolution API** para gerenciar instâncias do WhatsApp e automatizar interações.  
+Conta com recursos de IA, geração de figurinhas, informações esportivas e automações para grupos e contatos.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## ✨ Funcionalidades
 
-## Project setup
+- 🎨 Conversão de imagens em figurinhas com o comando `/sticker`
+- 🧑‍🤝‍🧑 Menção a todos os membros de um grupo com `/everyone`
+- ⚽ Consulta de partidas e placares do Brasileirão com `/futebolbr`
+- 🤖 Integração com o Google Gemini API para respostas com IA via `/gemini`
+- ⚙️ Rate limiting com Bottleneck, LRU Cache e Redis
+- 🔁 Suporte a múltiplas instâncias e ambientes com Docker e `.env`
 
-```bash
-$ pnpm install
-```
+---
 
-## Compile and run the project
+## 🧱 Tecnologias Utilizadas
 
-```bash
-# development
-$ pnpm run start
+| Camada        | Tecnologias                                          |
+|---------------|------------------------------------------------------|
+| Backend       | NestJS, TypeScript, Axios, Class Validator           |
+| Mensageria    | Evolution API (Webhooks via Docker)                  |
+| IA            | Gemini API (Google Generative AI)                    |
+| APIs          | Football-Data.org (dados do Brasileirão)            |
+| Banco de Dados| PostgreSQL via Prisma ORM                            |
+| Cache         | Redis + LRU Cache                                    |
+| DevOps        | Docker, Docker Compose                               |
 
-# watch mode
-$ pnpm run start:dev
+---
 
-# production mode
-$ pnpm run start:prod
-```
+## 🚀 Como Executar
 
-## Run tests
+**Pré-requisitos:** Docker + Docker Compose
 
 ```bash
-# unit tests
-$ pnpm run test
+# 1. Clone o repositório
+git clone <repo-url>
+cd <repo-folder>
 
-# e2e tests
-$ pnpm run test:e2e
+# 2. Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o arquivo .env com suas chaves e credenciais
 
-# test coverage
-$ pnpm run test:cov
+# 3. Suba os serviços com Docker
+docker compose up --build
 ```
 
-## Deployment
+Após isso:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- Acesse o painel da Evolution API em `http://localhost:8080`
+- Crie uma nova instância
+- Leia o QR Code com o número de WhatsApp do seu bot
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ pnpm install -g mau
-$ mau deploy
-```
+## 📡 Configuração do Webhook (Evolution API)
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Para que o bot funcione corretamente, configure o webhook seguindo os passos abaixo:
 
-## Resources
+### ✅ Etapas obrigatórias:
 
-Check out a few resources that may come in handy when working with NestJS:
+1. **Habilite o Webhook**
+   - Ative a opção **Enabled**
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+2. **Configure a URL do Webhook**
+   - Se estiver usando NGROK localmente:
+     ```bash
+     ngrok http 3000
+     ```
+   - Copie a URL gerada (ex: `https://abc123.ngrok.io`)
+   - Configure o webhook com:  
+     `https://abc123.ngrok.io/webhook`
 
-## Support
+3. **Ative as opções adicionais**
+   - **Webhook Base64**: ativado ✅ (necessário para envio de figurinhas)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+4. **Selecione apenas os eventos abaixo:**
+   - ✅ `MESSAGES_UPSERT`
+   - ✅ `SEND_MESSAGE`
 
-## Stay in touch
+⚠️ *Não habilite outros eventos para evitar sobrecarga de dados desnecessários.*
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## 📬 Contato
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Desenvolvido por [Davi Sá Marciel](https://github.com/davimarciel)  
+Açailândia - Maranhão | Sistemas de Informação (2024–2028)
+
+---
+
+## 🛠️ Licença
+
+Este projeto está licenciado sob a licença MIT.
+
+
+---
+
+## ⚠️ Observação sobre o Redis
+
+O uso do Redis está **desativado por padrão** devido a bugs conhecidos na integração com a Evolution API.  
+Para mais informações, consulte a [documentação oficial](https://docs.evolutionapi.com) e o [repositório da Evolution API](https://github.com/EvolutionAPI/evolution-api).
