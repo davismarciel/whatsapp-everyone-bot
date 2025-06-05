@@ -112,4 +112,4 @@ Este projeto está licenciado sob a licença MIT.
 ## ⚠️ Observação sobre o Redis
 
 O uso do Redis está **desativado por padrão** devido a bugs conhecidos na integração com a Evolution API.  
-Para mais informações, consulte a [documentação oficial](https://docs.evolutionapi.com) e o [repositório da Evolution API](https://github.com/EvolutionAPI/evolution-api).
+Para mais informações, consulte a [documentação oficial](https://doc.evolution-api.com/v1/pt/get-started/introduction) e o [repositório da Evolution API](https://github.com/EvolutionAPI/evolution-api).
