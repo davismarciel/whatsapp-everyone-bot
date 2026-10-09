@@ -1,3 +1,0 @@
-interface GroupMember {
-  id: string;
-}

@@ -1,18 +1,14 @@
-FROM node:20-alpine
-
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
+FROM node:24-bookworm-slim AS dependencies
 WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --no-audit --no-fund
 
-COPY pnpm-lock.yaml ./
+FROM node:24-bookworm-slim
+ENV NODE_ENV=production SESSION_DIR=/data/session
+WORKDIR /app
+COPY --from=dependencies /app/node_modules ./node_modules
 COPY package.json ./
-
-RUN pnpm install
-
-COPY . .
-
-RUN pnpm build
-
-EXPOSE 3000
-
-CMD ["pnpm", "start:prod"]
+COPY src ./src
+RUN mkdir -p /data && chown node:node /data
+USER node
+CMD ["node", "src/main.ts"]
