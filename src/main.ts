@@ -16,7 +16,6 @@ const logger = pino({ level: 'warn' });
 const sessionDir = process.env.SESSION_DIR ?? './data/session';
 const RECONNECT_DELAY_MS = 5_000;
 const MAX_MESSAGE_AGE_MS = 5 * 60_000;
-const RECONNECT_SETTLE_MS = 90_000;
 const startedAtSeconds = Math.floor(Date.now() / 1000);
 const usageLimit = createUsageLimit();
 const processedFile = join(sessionDir, 'processed-requests.log');
@@ -36,7 +35,7 @@ function isRecent(message: WAMessage): boolean {
   const seconds = typeof value === 'number' ? value : value?.toNumber();
   if (typeof seconds !== 'number' || !Number.isFinite(seconds)) return false;
   const ageMs = Date.now() - seconds * 1000;
-  return seconds > startedAtSeconds && ageMs >= 0 && ageMs < MAX_MESSAGE_AGE_MS;
+  return ageMs >= 0 && ageMs < MAX_MESSAGE_AGE_MS;
 }
 
 async function connect(): Promise<void> {
@@ -59,11 +58,8 @@ async function connect(): Promise<void> {
       qrcode.generate(qr, { small: true });
     }
     if (connection === 'open') {
-      acceptAfter = Date.now() + RECONNECT_SETTLE_MS;
-      console.info('WhatsApp conectado. Aguardando mensagens pendentes antes de aceitar /sticker.');
-      setTimeout(() => {
-        if (Date.now() >= acceptAfter) console.info('WhatsApp conectado. Pronto para /sticker.');
-      }, RECONNECT_SETTLE_MS);
+      acceptAfter = Math.floor(Date.now() / 1000) * 1000;
+      console.info('WhatsApp conectado. Pronto para /sticker.');
     }
     if (connection === 'close') {
       acceptAfter = Infinity;
@@ -87,14 +83,6 @@ async function connect(): Promise<void> {
       const messageId = message.key.id;
       if (!messageId) continue;
       const request = createHash('sha256').update(chatId).update(':').update(messageId).digest('hex');
-      if (processedRequests.has(request)) continue;
-      try {
-        appendFileSync(processedFile, `${request}\n`, { mode: 0o600 });
-        processedRequests.add(request);
-      } catch (error) {
-        console.error('Falha ao registrar pedido /sticker', error);
-        continue;
-      }
       const value = message.messageTimestamp;
       const seconds = typeof value === 'number' ? value : value?.toNumber();
       console.info('Pedido /sticker observado', {
@@ -105,8 +93,17 @@ async function connect(): Promise<void> {
         request: requestToken(chatId, messageId),
         ready: Date.now() >= acceptAfter,
       });
-      if (type !== 'notify' || !isRecent(message) || Date.now() < acceptAfter ||
+      const isNewMessage = type === 'notify' || message.key.fromMe === true;
+      if (!isNewMessage || !isRecent(message) || Date.now() < acceptAfter ||
           seconds === undefined || seconds * 1000 < acceptAfter) continue;
+      if (processedRequests.has(request)) continue;
+      try {
+        appendFileSync(processedFile, `${request}\n`, { mode: 0o600 });
+        processedRequests.add(request);
+      } catch (error) {
+        console.error('Falha ao registrar pedido /sticker', error);
+        continue;
+      }
       if (!usageLimit.tryAcquire(chatId)) continue;
       void (async () => {
         try {

@@ -15,7 +15,7 @@ npm start
 
 Leia o QR Code no terminal em **WhatsApp → Aparelhos conectados → Conectar aparelho**. A sessão fica em `data/session/`, fora do Git. Defina `SESSION_DIR` para mudar esse caminho.
 
-O bot processa apenas imagens novas de conversas privadas com a legenda exata `/sticker` (sem diferenciar maiúsculas). Após cada conexão, aguarda 90 segundos para descartar mensagens pendentes; pedidos enviados antes de ficar pronto precisam ser reenviados. O bot não solicita reenvio automático de mensagens que não conseguiu descriptografar; nesses casos, a pessoa também precisa reenviar o pedido. A entrada é limitada a 10 MB. A saída tem 512 × 512 pixels e até 100 KB, segundo as [regras de figurinhas estáticas do WhatsApp](https://faq.whatsapp.com/1056840314992666/?locale=pt_BR). Uma identificação criptográfica de cada pedido recebido fica no volume da sessão para evitar respostas duplicadas após reinícios.
+O bot processa apenas imagens novas de conversas privadas com a legenda exata `/sticker` (sem diferenciar maiúsculas). Após cada conexão, aceita pedidos com horário igual ou posterior ao início da conexão; pedidos enviados antes dela precisam ser reenviados. O bot não solicita reenvio automático de mensagens que não conseguiu descriptografar; nesses casos, a pessoa também precisa reenviar o pedido. A entrada é limitada a 10 MB. A saída tem 512 × 512 pixels e até 100 KB, segundo as [regras de figurinhas estáticas do WhatsApp](https://faq.whatsapp.com/1056840314992666/?locale=pt_BR). Uma identificação criptográfica de cada pedido recebido fica no volume da sessão para evitar respostas duplicadas após reinícios.
 
 Para conter abuso, há um limite em memória de **uma figurinha a cada 10 segundos por conversa**, **10 segundos entre respostas no total**, **10 tentativas por hora no total** e **uma conversão por vez**. Pedidos acima desses limites são ignorados sem resposta. Esses limites são reiniciados quando o processo reinicia; eles reduzem o volume, mas não garantem que o WhatsApp manterá o número ativo. [Os termos do WhatsApp](https://www.whatsapp.com/legal/terms-of-service) restringem mensagens automáticas, e o [Baileys não é oficial](https://github.com/WhiskeySockets/Baileys#disclaimer). Evite usar um número pessoal se não puder aceitar esse risco.
 
@@ -55,16 +55,21 @@ aws ec2 describe-instances --region us-east-2 --instance-ids i-002a6e6c5ac5860d1
   --query 'Reservations[0].Instances[0].PublicIpAddress' --output text
 ```
 
+O erro de stream `515` indica que o Baileys precisa reiniciar a conexão; o bot tenta reconectar automaticamente. Esse código, isoladamente, não exige um novo QR Code.
+
 **Baileys não tem painel web próprio.** Ele é uma biblioteca que se conecta ao WhatsApp pelo protocolo WebSocket; a [documentação do Baileys](https://baileys.wiki/docs/intro/) é o site disponível. A antiga interface de gerenciamento pertencia à Evolution API, removida deste projeto. Neste bot, o QR Code e o estado da conexão aparecem nos logs. Nenhuma porta web foi aberta na instância.
 
-Para ler um QR Code **novo**, execute no ambiente que possui a chave SSH:
+### Vincular novamente o WhatsApp
+
+Se o bot aparece como conectado, mas não recebe pedidos e os logs mostram erros de descriptografia, crie uma sessão nova. No terminal desta máquina, execute:
 
 ```bash
-ssh -i /home/davi/.ssh/id_ed25519 ec2-user@3.145.186.22 \
-  'sudo docker restart sticker-bot >/dev/null && sudo docker logs --since 10s -f sticker-bot'
+./scripts/relink-ec2.sh ec2-user@3.145.186.22 /home/davi/.ssh/id_ed25519
 ```
 
-No telefone, vá em **WhatsApp → Aparelhos conectados → Conectar aparelho**. Aguarde a linha `WhatsApp conectado. Pronto para /sticker.` nos logs e pressione Ctrl-C para sair dos logs. O número não fica no código: o vínculo é feito pelo QR Code. Faça um teste enviando uma foto com a legenda `/sticker`.
+O comando para o bot, move `session/` para um diretório `session-before-relink-...` no mesmo volume Docker, inicia uma sessão vazia e mostra o novo QR Code. A sessão anterior fica preservada; anote o nome do diretório impresso pelo comando. Reiniciar o contêiner sem esse passo reutiliza a sessão antiga e não gera outro QR Code.
+
+No telefone, vá em **WhatsApp → Aparelhos conectados → Conectar aparelho** e leia o QR Code no terminal. Aguarde a linha `WhatsApp conectado. Pronto para /sticker.` nos logs. Pressione Ctrl-C para sair dos logs, sem parar o bot. Faça um teste enviando uma foto com a legenda `/sticker` em conversa privada. Não compartilhe o QR Code ou os arquivos da sessão.
 
 Para verificar o estado sem mostrar o QR Code:
 
