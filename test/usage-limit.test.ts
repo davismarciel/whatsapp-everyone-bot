@@ -9,8 +9,8 @@ test('limita concorrência, frequência por conversa e volume global', () => {
   limit.release();
   assert.equal(limit.tryAcquire('b', 10_000), true);
   limit.release();
-  assert.equal(limit.tryAcquire('a', 60_000 - 1), false);
-  assert.equal(limit.tryAcquire('a', 60_000), true);
+  assert.equal(limit.tryAcquire('a', 20_000 - 1), false);
+  assert.equal(limit.tryAcquire('a', 20_000), true);
   limit.release();
 
   for (let i = 3; i < 10; i++) {
